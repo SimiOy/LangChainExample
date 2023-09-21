@@ -65,6 +65,9 @@ if __name__ == '__main__':
     # textbox for user input
     question = st.text_input("Enter your question about the book:")
 
+    # conversation history
+    conversation_history = st.session_state.get("conversation_history", [])
+
     # embed_pdf()
     qa_interface = load_embedding()
 
@@ -80,4 +83,12 @@ if __name__ == '__main__':
         # query = input("Enter question:\n")
         response = chat_pdf(qa_interface, question)
 
-        st.write(response)
+        # Update the conversation history
+        conversation_history.append({"user": question, "AI": response})
+        st.session_state.conversation_history = conversation_history
+
+        # Display the conversation history
+    for entry in reversed(conversation_history):
+        st.write(f"You: {entry['user']}")
+        st.write(f"AI: {entry['AI']}")
+        st.write("---")
