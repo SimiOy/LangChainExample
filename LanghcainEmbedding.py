@@ -9,8 +9,7 @@ from langchain.memory import ConversationSummaryBufferMemory
 import streamlit as st
 
 directory = 'db'
-print(st.secrets['OPENAI_API_KEY'])
-os.environ['OPENAI_API_KEY'] = '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'
+os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
 file = 'data/Disciplined Entrepreneurship.pdf'
 
 
