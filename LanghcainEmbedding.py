@@ -1,5 +1,6 @@
 import os
 
+import openai
 from langchain import FAISS, PromptTemplate
 from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
@@ -9,22 +10,25 @@ from langchain.memory import ConversationSummaryBufferMemory
 import streamlit as st
 
 directory = 'db'
-os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
+openai_api_key = st.secrets['OPENAI_API_KEY']
+os.environ['OPENAI_API_KEY'] = openai_api_key
 file = 'data/Disciplined Entrepreneurship.pdf'
+openai.api_key = openai_api_key
+temperature = 0.3
 
 
 def embed_pdf():
     loader = PyPDFLoader(file)
     pages = loader.load_and_split()
 
-    vector_index = FAISS.from_documents(pages, OpenAIEmbeddings(openai_api_key=os.environ['OPENAI_API_KEY']))
+    vector_index = FAISS.from_documents(pages, OpenAIEmbeddings(openai_api_key=openai_api_key))
     vector_index.save_local(directory)
 
 
 def load_embedding():
-    vector_store = FAISS.load_local(directory, OpenAIEmbeddings())
+    vector_store = FAISS.load_local(directory, OpenAIEmbeddings(openai_api_key=openai_api_key))
 
-    llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.3, openai_api_key=os.environ['OPENAI_API_KEY'])
+    llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=temperature, openai_api_key=openai_api_key)
     memory = ConversationSummaryBufferMemory(llm=llm, max_token_limit=1000, memory_key='chat_history',
                                              input_key='query', output_key='result', return_messages=True)
 
@@ -56,13 +60,19 @@ def chat_pdf(qa, question):
 
 
 if __name__ == '__main__':
-    st.title("PDF Chatbot")
+    st.title('24 steps to Disciplined Entrepreneurship')
 
     # textbox for user input
     question = st.text_input("Enter your question about the book:")
 
     # embed_pdf()
     qa_interface = load_embedding()
+
+    # Create a slider for adjusting the temperature
+    temperature = st.sidebar.slider(
+        "Adjust the temperature",
+        0.0, 1.0, temperature, 0.01
+    )
 
     # ask questions
     # button
